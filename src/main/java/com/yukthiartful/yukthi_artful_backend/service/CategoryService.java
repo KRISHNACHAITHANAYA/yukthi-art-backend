@@ -1,5 +1,12 @@
 package com.yukthiartful.yukthi_artful_backend.service;
 
-public class CategoryService {
-    
-}
+import java.util.List;
+
+import com.yukthiartful.yukthi_artful_backend.entity.Category;
+
+public interface CategoryService {
+
+    Category saveCategory(Category category);
+
+    List<Category> getAllCategories();
+} 
