@@ -10,17 +10,21 @@ import com.yukthiartful.yukthi_artful_backend.entity.User;
 import com.yukthiartful.yukthi_artful_backend.exception.EmailAlreadyExistsException;
 import com.yukthiartful.yukthi_artful_backend.exception.ResourceNotFoundException;
 import com.yukthiartful.yukthi_artful_backend.repository.UserRepository;
-
+import com.yukthiartful.yukthi_artful_backend.security.JwtUtil;
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public AuthServiceImpl(UserRepository userRepository,
-            BCryptPasswordEncoder passwordEncoder) {
+            BCryptPasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -53,10 +57,9 @@ public class AuthServiceImpl implements AuthService {
                 request.getPassword(),
                 user.getPassword());
 
-        if (!passwordMatches) {
-            throw new RuntimeException("Invalid credentials");
-        }
+        String token = jwtUtil.generateToken(user.getEmail());
 
-        return new LoginResponse("Login Successful");
+        return new LoginResponse(token);
     }
+
 }
