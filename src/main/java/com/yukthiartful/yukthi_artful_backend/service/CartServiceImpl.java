@@ -18,77 +18,82 @@ import com.yukthiartful.yukthi_artful_backend.repository.UserRepository;
 @Service
 public class CartServiceImpl implements CartService {
 
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
-    private final ArtworkRepository artworkRepository;
-    private final UserRepository userRepository;
+        private final CartRepository cartRepository;
+        private final CartItemRepository cartItemRepository;
+        private final ArtworkRepository artworkRepository;
+        private final UserRepository userRepository;
 
-    public CartServiceImpl(
-            CartRepository cartRepository,
-            CartItemRepository cartItemRepository,
-            ArtworkRepository artworkRepository,
-            UserRepository userRepository) {
+        public CartServiceImpl(
+                        CartRepository cartRepository,
+                        CartItemRepository cartItemRepository,
+                        ArtworkRepository artworkRepository,
+                        UserRepository userRepository) {
 
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.artworkRepository = artworkRepository;
-        this.userRepository = userRepository;
-    }
+                this.cartRepository = cartRepository;
+                this.cartItemRepository = cartItemRepository;
+                this.artworkRepository = artworkRepository;
+                this.userRepository = userRepository;
+        }
 
-    @Override
-    public Cart addToCart(AddToCartRequest request) {
+        @Override
+        public Cart addToCart(AddToCartRequest request) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext()
-                        .getAuthentication();
+                Authentication authentication = SecurityContextHolder.getContext()
+                                .getAuthentication();
 
-        String email = authentication.getName();
+                String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found"));
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "User not found"));
 
-        Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
-                });
+                Cart cart = cartRepository.findByUser(user)
+                                .orElseGet(() -> {
+                                        Cart newCart = new Cart();
+                                        newCart.setUser(user);
+                                        return cartRepository.save(newCart);
+                                });
 
-        Artwork artwork = artworkRepository
-                .findById(request.getArtworkId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Artwork not found"));
+                Artwork artwork = artworkRepository
+                                .findById(request.getArtworkId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Artwork not found"));
 
-        CartItem item = new CartItem();
-        item.setCart(cart);
-        item.setArtwork(artwork);
-        item.setQuantity(request.getQuantity());
+                CartItem item = new CartItem();
+                item.setCart(cart);
+                item.setArtwork(artwork);
+                item.setQuantity(request.getQuantity());
 
-        cartItemRepository.save(item);
+                cartItemRepository.save(item);
 
-        return cartRepository.findById(cart.getId()).get();
-    }
+                return cartRepository.findById(cart.getId()).get();
+        }
 
-    @Override
-    public Cart getCart() {
+        @Override
+        public Cart getCart() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext()
-                        .getAuthentication();
+                Authentication authentication = SecurityContextHolder.getContext()
+                                .getAuthentication();
 
-        String email = authentication.getName();
+                String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User not found"));
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "User not found"));
 
-        return cartRepository.findByUser(user)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Cart not found"));
-    }
+                return cartRepository.findByUser(user)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Cart not found"));
+        }
+
+        @Override
+        public void removeItem(Long itemId) {
+
+                CartItem item = cartItemRepository
+                                .findById(itemId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Cart Item not found"));
+
+                cartItemRepository.delete(item);
+        }
 }
