@@ -63,4 +63,18 @@ public class ArtworkServiceImpl implements ArtworkService {
 
         artworkRepository.delete(artwork);
     }
+
+    @Override
+    public List<Artwork> searchArtworks(String keyword) {
+
+        return artworkRepository
+                .findByTitleContainingIgnoreCase(keyword);
+    }
+
+    @Override
+    public List<Artwork> getArtworksByCategory(Long categoryId) {
+
+        return artworkRepository
+                .findByCategoryId(categoryId);
+    }
 }

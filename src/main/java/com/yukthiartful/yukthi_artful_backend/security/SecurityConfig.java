@@ -33,28 +33,43 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
+public SecurityFilterChain securityFilterChain(
+        HttpSecurity http)
+        throws Exception {
 
-        http
-                .csrf(csrf -> csrf.disable())
+    http
+            .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers(
-                                "/api/auth/**")
-                        .permitAll()
+                    .requestMatchers(
+                            "/api/auth/**",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**",
+                            "/swagger-ui.html")
+                    .permitAll()
 
-                        .anyRequest()
-                        .authenticated())
+                    .requestMatchers("/api/dashboard/**")
+                    .hasRole("ADMIN")
 
-                .httpBasic(Customizer.withDefaults());
+                    .requestMatchers("/api/orders/*/status")
+                    .hasRole("ADMIN")
 
-        http.addFilterBefore(
-                jwtFilter,
-                UsernamePasswordAuthenticationFilter.class);
+                    .requestMatchers(
+                            "/api/cart/**",
+                            "/api/orders/place",
+                            "/api/orders/my-orders")
+                    .hasAnyRole("CUSTOMER", "ADMIN")
 
-        return http.build();
-    }
+                    .anyRequest()
+                    .authenticated())
+
+            .httpBasic(Customizer.withDefaults());
+
+    http.addFilterBefore(
+            jwtFilter,
+            UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
 }

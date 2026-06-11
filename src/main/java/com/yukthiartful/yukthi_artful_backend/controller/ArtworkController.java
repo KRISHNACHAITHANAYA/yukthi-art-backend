@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.yukthiartful.yukthi_artful_backend.entity.Artwork;
@@ -58,4 +59,18 @@ public class ArtworkController {
         return "Artwork deleted successfully";
     }
 
+    @GetMapping("/search")
+    public List<Artwork> searchArtworks(
+            @RequestParam String keyword) {
+
+        return artworkService.searchArtworks(keyword);
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public List<Artwork> getByCategory(
+            @PathVariable Long categoryId) {
+
+        return artworkService
+                .getArtworksByCategory(categoryId);
+    }
 }

@@ -15,4 +15,8 @@ public interface ArtworkService {
     Artwork updateArtwork(Long id, Artwork artwork);
 
     void deleteArtwork(Long id);
+
+    List<Artwork> searchArtworks(String keyword);
+
+    List<Artwork> getArtworksByCategory(Long categoryId);
 }

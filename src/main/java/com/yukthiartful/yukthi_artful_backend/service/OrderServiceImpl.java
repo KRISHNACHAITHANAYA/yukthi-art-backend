@@ -22,94 +22,98 @@ import com.yukthiartful.yukthi_artful_backend.repository.UserRepository;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
-    private final UserRepository userRepository;
+        private final OrderRepository orderRepository;
+        private final OrderItemRepository orderItemRepository;
+        private final CartRepository cartRepository;
+        private final CartItemRepository cartItemRepository;
+        private final UserRepository userRepository;
 
-    public OrderServiceImpl(
-            OrderRepository orderRepository,
-            OrderItemRepository orderItemRepository,
-            CartRepository cartRepository,
-            CartItemRepository cartItemRepository,
-            UserRepository userRepository) {
+        public OrderServiceImpl(
+                        OrderRepository orderRepository,
+                        OrderItemRepository orderItemRepository,
+                        CartRepository cartRepository,
+                        CartItemRepository cartItemRepository,
+                        UserRepository userRepository) {
 
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.userRepository = userRepository;
-    }
-
-    @Override
-    public Order placeOrder() {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
-
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Cart not found"));
-
-        Order order = new Order();
-        order.setUser(user);
-        order.setStatus("PENDING");
-        order.setOrderDate(LocalDateTime.now());
-
-        double totalAmount = 0;
-
-        Order savedOrder = orderRepository.save(order);
-
-        for (CartItem cartItem : cart.getItems()) {
-
-            OrderItem orderItem = new OrderItem();
-
-            orderItem.setOrder(savedOrder);
-            orderItem.setArtwork(cartItem.getArtwork());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getArtwork().getPrice());
-
-            orderItemRepository.save(orderItem);
-
-            totalAmount +=
-                    cartItem.getArtwork().getPrice()
-                    * cartItem.getQuantity();
+                this.orderRepository = orderRepository;
+                this.orderItemRepository = orderItemRepository;
+                this.cartRepository = cartRepository;
+                this.cartItemRepository = cartItemRepository;
+                this.userRepository = userRepository;
         }
 
-        savedOrder.setTotalAmount(totalAmount);
+        @Override
+        public Order placeOrder() {
 
-        orderRepository.save(savedOrder);
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        return savedOrder;
-    }
+                String email = authentication.getName();
 
-    @Override
-    public List<Order> getMyOrders() {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                Cart cart = cartRepository.findByUser(user)
+                                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-        String email = authentication.getName();
+                Order order = new Order();
+                order.setUser(user);
+                order.setStatus("PENDING");
+                order.setOrderDate(LocalDateTime.now());
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+                double totalAmount = 0;
 
-        return orderRepository.findByUser(user);
-    }
+                Order savedOrder = orderRepository.save(order);
 
-    @Override
-    public Order getOrderById(Long orderId) {
+                for (CartItem cartItem : cart.getItems()) {
 
-        return orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Order not found"));
-    }
+                        OrderItem orderItem = new OrderItem();
+
+                        orderItem.setOrder(savedOrder);
+                        orderItem.setArtwork(cartItem.getArtwork());
+                        orderItem.setQuantity(cartItem.getQuantity());
+                        orderItem.setPrice(cartItem.getArtwork().getPrice());
+
+                        orderItemRepository.save(orderItem);
+
+                        totalAmount += cartItem.getArtwork().getPrice()
+                                        * cartItem.getQuantity();
+                }
+
+                savedOrder.setTotalAmount(totalAmount);
+
+                orderRepository.save(savedOrder);
+
+                return savedOrder;
+        }
+
+        @Override
+        public List<Order> getMyOrders() {
+
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+                String email = authentication.getName();
+
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                return orderRepository.findByUser(user);
+        }
+
+        @Override
+        public Order getOrderById(Long orderId) {
+
+                return orderRepository.findById(orderId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        }
+
+        @Override
+        public Order updateOrderStatus(Long orderId, String status) {
+
+                Order order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+                order.setStatus(status);
+
+                return orderRepository.save(order);
+        }
 }
